@@ -1,8 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Calendar } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface VehicleCardProps {
+  id: number;
   image: string;
   title: string;
   city: string;
@@ -11,7 +13,8 @@ interface VehicleCardProps {
   type?: string;
 }
 
-const VehicleCard = ({ image, title, city, year, price, type }: VehicleCardProps) => {
+const VehicleCard = ({ id, image, title, city, year, price, type }: VehicleCardProps) => {
+  const navigate = useNavigate();
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -22,7 +25,10 @@ const VehicleCard = ({ image, title, city, year, price, type }: VehicleCardProps
   };
 
   return (
-    <Card className="group cursor-pointer transition-all duration-300 hover:shadow-xl border-border overflow-hidden rounded-2xl">
+    <Card
+      className="group cursor-pointer transition-all duration-300 hover:shadow-xl border-border overflow-hidden rounded-2xl"
+      onClick={() => navigate(`/vehiculo/${id}`)}
+    >
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         <img 
           src={image} 

@@ -1,7 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
+  const navigate = useNavigate();
+
+  const scrollToVehicles = () => {
+    const vehiclesSection = document.getElementById('vehiculos');
+    if (vehiclesSection) {
+      vehiclesSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section className="relative py-20 md:py-32 px-4 sm:px-6 lg:px-8 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-background"></div>
@@ -14,16 +24,26 @@ const Hero = () => {
           </h1>
           
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            La plataforma más confiable de Colombia para tu próximo carro o moto. 
+            La plataforma más confiable de Colombia para tu próximo carro o moto.
             Conectamos compradores y vendedores de forma segura.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-            <Button variant="hero" size="lg" className="text-base px-8">
+            <Button
+              variant="hero"
+              size="lg"
+              className="text-base px-8"
+              onClick={() => navigate("/publicar")}
+            >
               Publicar vehículo gratis
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            <Button variant="outline" size="lg" className="text-base px-8">
+            <Button
+              variant="outline"
+              size="lg"
+              className="text-base px-8"
+              onClick={scrollToVehicles}
+            >
               Ver vehículos
             </Button>
           </div>
