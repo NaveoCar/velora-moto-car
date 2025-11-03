@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import VehicleCard from "@/components/VehicleCard";
 import Footer from "@/components/Footer";
+import NaveoCarChat from "@/components/NaveoCarChat";
 import vehicle1 from "@/assets/vehicle-1.jpg";
 import vehicle2 from "@/assets/vehicle-2.jpg";
 import vehicle3 from "@/assets/vehicle-3.jpg";
@@ -99,6 +100,7 @@ const Index = () => {
         </div>
       </section>
 
+      <NaveoCarChat />
       <Footer />
     </div>
   );

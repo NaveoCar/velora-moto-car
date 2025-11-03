@@ -8,7 +8,7 @@ const Navbar = () => {
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
             <Car className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-foreground">Velora</span>
+            <span className="text-2xl font-bold text-foreground">Naveo</span>
           </div>
           
           <div className="hidden md:flex items-center gap-8">
@@ -18,8 +18,8 @@ const Navbar = () => {
             <a href="#publicar" className="text-foreground hover:text-primary transition-colors font-medium">
               Publicar
             </a>
-            <a href="#velora-care" className="text-foreground hover:text-primary transition-colors font-medium">
-              Velora Care
+            <a href="#naveo-care" className="text-foreground hover:text-primary transition-colors font-medium">
+              Naveo Care
             </a>
           </div>
 
