@@ -8,6 +8,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Vehicles from "./pages/Vehicles";
 import PublishVehicle from "./pages/PublishVehicle";
+import MyVehicles from "./pages/MyVehicles";
 import VehicleDetails from "./pages/VehicleDetails";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -38,6 +39,15 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={['seller', 'admin']}>
                   <PublishVehicle />
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/mis-vehiculos"
+              element={
+                <ProtectedRoute allowedRoles={['seller', 'admin']}>
+                  <MyVehicles />
                 </ProtectedRoute>
               }
             />

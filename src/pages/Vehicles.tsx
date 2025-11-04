@@ -1,14 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import VehicleCard from "@/components/VehicleCard";
 import SearchFilters, { FilterState } from "@/components/SearchFilters";
 import Footer from "@/components/Footer";
-import vehicle1 from "@/assets/vehicle-1.jpg";
-import vehicle2 from "@/assets/vehicle-2.jpg";
-import vehicle3 from "@/assets/vehicle-3.jpg";
-import vehicle4 from "@/assets/vehicle-4.jpg";
-import vehicle5 from "@/assets/vehicle-5.jpg";
-import vehicle6 from "@/assets/vehicle-6.jpg";
+import { vehicleService } from "@/services/vehicle.service";
+import type { Vehicle } from "@/types/vehicle.types";
+import { Loader2 } from "lucide-react";
 
 const Vehicles = () => {
   const [filters, setFilters] = useState<FilterState>({
@@ -22,93 +19,58 @@ const Vehicles = () => {
     transmission: "",
     fuelType: "",
   });
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const vehicles = [
-    {
-      id: 1,
-      image: vehicle1,
-      title: "BMW Serie 5 2023",
-      city: "Bogotá",
-      year: 2023,
-      price: 185000000,
-      type: "Sedán"
-    },
-    {
-      id: 2,
-      image: vehicle2,
-      title: "MG ZS 2024",
-      city: "Medellín",
-      year: 2024,
-      price: 95000000,
-      type: "SUV"
-    },
-    {
-      id: 3,
-      image: vehicle3,
-      title: "Kawasaki Ninja 2023",
-      city: "Cali",
-      year: 2023,
-      price: 42000000,
-      type: "Moto"
-    },
-    {
-      id: 4,
-      image: vehicle4,
-      title: "Toyota Hilux 2024",
-      city: "Barranquilla",
-      year: 2024,
-      price: 165000000,
-      type: "Camioneta"
-    },
-    {
-      id: 5,
-      image: vehicle5,
-      title: "Chevrolet Spark GT 2023",
-      city: "Cartagena",
-      year: 2023,
-      price: 38000000,
-      type: "Hatchback"
-    },
-    {
-      id: 6,
-      image: vehicle6,
-      title: "Kawasaki Versys 650 2024",
-      city: "Bucaramanga",
-      year: 2024,
-      price: 48000000,
-      type: "Moto"
-    }
-  ];
+  useEffect(() => {
+    loadVehicles();
+  }, [filters]);
 
-  const filteredVehicles = useMemo(() => {
-    return vehicles.filter((vehicle) => {
-      // Búsqueda por texto
+  async function loadVehicles() {
+    try {
+      setLoading(true);
+      
+      // Preparar filtros para el servicio
+      const serviceFilters = {
+        type: filters.type && filters.type !== "all" ? filters.type : undefined,
+        minPrice: filters.minPrice ? parseFloat(filters.minPrice) : undefined,
+        maxPrice: filters.maxPrice ? parseFloat(filters.maxPrice) : undefined,
+        minYear: filters.minYear ? parseInt(filters.minYear) : undefined,
+        maxYear: filters.maxYear ? parseInt(filters.maxYear) : undefined,
+      };
+
+      const data = await vehicleService.getActiveVehicles(serviceFilters);
+      
+      // Aplicar filtro de búsqueda de texto en el cliente
+      let filteredData = data;
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
-        const matchesSearch =
+        filteredData = data.filter(vehicle =>
           vehicle.title.toLowerCase().includes(searchLower) ||
+          vehicle.brand.toLowerCase().includes(searchLower) ||
+          vehicle.model.toLowerCase().includes(searchLower) ||
           vehicle.type.toLowerCase().includes(searchLower) ||
-          vehicle.city.toLowerCase().includes(searchLower);
-        if (!matchesSearch) return false;
+          vehicle.city.toLowerCase().includes(searchLower)
+        );
       }
 
-      // Filtro por tipo
-      if (filters.type && filters.type !== "all" && vehicle.type !== filters.type) return false;
+      // Aplicar filtro de ciudad
+      if (filters.city && filters.city !== "all") {
+        filteredData = filteredData.filter(vehicle => vehicle.city === filters.city);
+      }
 
-      // Filtro por ciudad
-      if (filters.city && filters.city !== "all" && vehicle.city !== filters.city) return false;
+      setVehicles(filteredData);
+    } catch (error) {
+      console.error('Error loading vehicles:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
-      // Filtro por precio
-      if (filters.minPrice && vehicle.price < parseInt(filters.minPrice)) return false;
-      if (filters.maxPrice && vehicle.price > parseInt(filters.maxPrice)) return false;
-
-      // Filtro por año
-      if (filters.minYear && vehicle.year < parseInt(filters.minYear)) return false;
-      if (filters.maxYear && vehicle.year > parseInt(filters.maxYear)) return false;
-
-      return true;
-    });
-  }, [vehicles, filters]);
+  const getPrimaryImage = (vehicle: Vehicle) => {
+    const primaryImage = vehicle.vehicle_images?.find(img => img.is_primary);
+    return primaryImage?.thumbnail_url || vehicle.vehicle_images?.[0]?.thumbnail_url || '/placeholder.svg';
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -134,7 +96,11 @@ const Vehicles = () => {
             <SearchFilters onFilterChange={setFilters} />
           </div>
 
-          {filteredVehicles.length === 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : vehicles.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-xl text-muted-foreground mb-4">
                 No se encontraron vehículos con los filtros seleccionados
@@ -146,14 +112,15 @@ const Vehicles = () => {
           ) : (
             <>
               <div className="mb-4 text-muted-foreground">
-                Mostrando {filteredVehicles.length} {filteredVehicles.length === 1 ? 'vehículo' : 'vehículos'}
+                Mostrando {vehicles.length} {vehicles.length === 1 ? 'vehículo' : 'vehículos'}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                {filteredVehicles.map((vehicle) => (
+                {vehicles.map((vehicle) => (
                   <VehicleCard
                     key={vehicle.id}
                     id={vehicle.id}
-                    image={vehicle.image}
+                    slug={vehicle.slug}
+                    image={getPrimaryImage(vehicle)}
                     title={vehicle.title}
                     city={vehicle.city}
                     year={vehicle.year}

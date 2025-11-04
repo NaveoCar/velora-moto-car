@@ -15,7 +15,9 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, X } from "lucide-react";
+import { Upload, X, Loader2 } from "lucide-react";
+import { vehicleService } from "@/services/vehicle.service";
+import type { VehicleCreateData } from "@/types/vehicle.types";
 
 const PublishVehicle = () => {
   const navigate = useNavigate();
@@ -34,14 +36,12 @@ const PublishVehicle = () => {
     price: "",
     mileage: "",
     city: "",
+    department: "",
     transmission: "",
     fuelType: "",
     color: "",
     doors: "",
     condition: "",
-    contactName: "",
-    contactPhone: "",
-    contactEmail: "",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -86,30 +86,63 @@ const PublishVehicle = () => {
 
     try {
       // Validación básica
-      if (!formData.title || !formData.type || !formData.price || images.length === 0) {
+      if (!formData.title || !formData.type || !formData.brand || !formData.model ||
+          !formData.year || !formData.price || !formData.city || !formData.department) {
         toast({
           title: "Campos requeridos",
-          description: "Por favor completa todos los campos obligatorios y añade al menos una imagen",
+          description: "Por favor completa todos los campos obligatorios",
           variant: "destructive",
         });
         setLoading(false);
         return;
       }
 
-      // Aquí se implementaría la lógica de subida a Supabase
-      // Por ahora simulamos el proceso
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (images.length === 0) {
+        toast({
+          title: "Imágenes requeridas",
+          description: "Debes agregar al menos una imagen del vehículo",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Preparar datos para el servicio
+      const vehicleData: VehicleCreateData = {
+        title: formData.title,
+        description: formData.description || undefined,
+        type: formData.type,
+        brand: formData.brand,
+        model: formData.model,
+        year: parseInt(formData.year),
+        price: parseFloat(formData.price),
+        mileage: formData.mileage ? parseInt(formData.mileage) : undefined,
+        city: formData.city,
+        department: formData.department,
+        transmission: formData.transmission || undefined,
+        fuel_type: formData.fuelType || undefined,
+        color: formData.color || undefined,
+        doors: formData.doors ? parseInt(formData.doors) : undefined,
+        condition: formData.condition || undefined,
+      };
+
+      // Crear vehículo con imágenes
+      const vehicle = await vehicleService.createVehicle(vehicleData, images);
+
+      // Publicar automáticamente
+      await vehicleService.publishVehicle(vehicle.id);
 
       toast({
         title: "¡Vehículo publicado!",
         description: "Tu vehículo ha sido publicado exitosamente",
       });
 
-      navigate("/");
+      navigate("/mis-vehiculos");
     } catch (error) {
+      console.error('Error publishing vehicle:', error);
       toast({
         title: "Error",
-        description: "Hubo un error al publicar tu vehículo. Intenta nuevamente.",
+        description: error instanceof Error ? error.message : "Hubo un error al publicar tu vehículo",
         variant: "destructive",
       });
     } finally {
@@ -280,6 +313,18 @@ const PublishVehicle = () => {
                     required
                   />
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="department">Departamento *</Label>
+                  <Input
+                    id="department"
+                    name="department"
+                    placeholder="Cundinamarca"
+                    value={formData.department}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -374,54 +419,6 @@ const PublishVehicle = () => {
             </CardContent>
           </Card>
 
-          {/* Información de contacto */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Información de contacto</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="contactName">Nombre completo *</Label>
-                  <Input
-                    id="contactName"
-                    name="contactName"
-                    placeholder="Juan Pérez"
-                    value={formData.contactName}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="contactPhone">Teléfono *</Label>
-                  <Input
-                    id="contactPhone"
-                    name="contactPhone"
-                    type="tel"
-                    placeholder="3001234567"
-                    value={formData.contactPhone}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="contactEmail">Correo electrónico *</Label>
-                  <Input
-                    id="contactEmail"
-                    name="contactEmail"
-                    type="email"
-                    placeholder="correo@ejemplo.com"
-                    value={formData.contactEmail}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           <div className="flex gap-4 justify-end">
             <Button
               type="button"
@@ -432,7 +429,14 @@ const PublishVehicle = () => {
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Publicando..." : "Publicar vehículo"}
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Publicando...
+                </>
+              ) : (
+                "Publicar vehículo"
+              )}
             </Button>
           </div>
         </form>

@@ -25,11 +25,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Cargar usuario al montar
   useEffect(() => {
-    loadUser();
+    let mounted = true;
+
+    async function initialize() {
+      try {
+        setLoading(true);
+        const currentUser = await authService.getCurrentUser();
+        
+        if (mounted) {
+          if (currentUser) {
+            setUser(currentUser);
+            await loadProfile(currentUser.id);
+          } else {
+            setUser(null);
+            setProfile(null);
+          }
+        }
+      } catch (err) {
+        console.error('Error loading user:', err);
+        if (mounted) {
+          setError(err instanceof Error ? err.message : 'Error loading user');
+          setUser(null);
+          setProfile(null);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    initialize();
 
     // Suscribirse a cambios de autenticación
     const { data: { subscription } } = authService.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return;
+
         if (event === 'SIGNED_IN' && session?.user) {
           setUser(session.user);
           await loadProfile(session.user.id);
@@ -44,26 +76,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
-
-  async function loadUser() {
-    try {
-      setLoading(true);
-      const currentUser = await authService.getCurrentUser();
-      
-      if (currentUser) {
-        setUser(currentUser);
-        await loadProfile(currentUser.id);
-      }
-    } catch (err) {
-      console.error('Error loading user:', err);
-      setError(err instanceof Error ? err.message : 'Error loading user');
-    } finally {
-      setLoading(false);
-    }
-  }
 
   async function loadProfile(userId: string) {
     try {
@@ -71,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(userProfile);
     } catch (err) {
       console.error('Error loading profile:', err);
+      // No lanzar error, solo loguear
     }
   }
 
