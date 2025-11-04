@@ -5,13 +5,6 @@ import { useNavigate } from "react-router-dom";
 const Hero = () => {
   const navigate = useNavigate();
 
-  const scrollToVehicles = () => {
-    const vehiclesSection = document.getElementById('vehiculos');
-    if (vehiclesSection) {
-      vehiclesSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
     <section className="relative py-20 md:py-32 px-4 sm:px-6 lg:px-8 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-background"></div>
@@ -42,7 +35,7 @@ const Hero = () => {
               variant="outline"
               size="lg"
               className="text-base px-8"
-              onClick={scrollToVehicles}
+              onClick={() => navigate("/vehiculos")}
             >
               Ver vehículos
             </Button>

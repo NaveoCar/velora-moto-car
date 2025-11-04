@@ -20,9 +20,9 @@ const Navbar = () => {
           </Link>
           
           <div className="hidden md:flex items-center gap-8">
-            <a href="/#vehiculos" className="text-foreground hover:text-primary transition-colors font-medium">
+            <Link to="/vehiculos" className="text-foreground hover:text-primary transition-colors font-medium">
               Vehículos
-            </a>
+            </Link>
             <Link to="/publicar" className="text-foreground hover:text-primary transition-colors font-medium">
               Publicar
             </Link>
@@ -53,9 +53,9 @@ const Navbar = () => {
                   <span className="text-xl font-bold text-foreground">Naveo</span>
                 </Link>
                 
-                <a href="/#vehiculos" className="text-foreground hover:text-primary transition-colors font-medium text-lg">
+                <Link to="/vehiculos" className="text-foreground hover:text-primary transition-colors font-medium text-lg">
                   Vehículos
-                </a>
+                </Link>
                 <Link to="/publicar" className="text-foreground hover:text-primary transition-colors font-medium text-lg">
                   Publicar
                 </Link>
